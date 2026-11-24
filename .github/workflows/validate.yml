@@ -1,0 +1,22 @@
+name: Validate PRTF
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Data integrity
+        run: node scripts/validate_prtf.js prtf.html
+      - name: Data files are up to date
+        run: |
+          node scripts/export_json.js prtf.html
+          node scripts/build_readme.js
+          git diff --exit-code -- data README.md || (echo "::error::Run export_json.js and build_readme.js and commit the result" && exit 1)
